@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语言学习工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; margin: 0; padding: 20px; }
+        .sidebar { width: 20%; padding: 10px; }
+        .main { width: 60%; padding: 10px; }
+        .result { width: 20%; padding: 10px; }
+        .upload-area { margin-bottom: 20px; }
+        .input-area { margin-bottom: 20px; }
+        .result-box { border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="upload-area">
+            <input type="file" id="fileInput" accept=".pdf">
+            <button onclick="uploadFile()">上传</button>
+            <ul id="fileList"></ul>
+        </div>
+    </div>
+    <div class="main">
+        <div class="input-area">
+            <input type="text" id="wordInput" placeholder="输入单词">
+            <button onclick="queryWord()">查询</button>
+        </div>
+    </div>
+    <div class="result">
+        <div class="result-box" id="resultBox"></div>
+    </div>
+
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                fileList.appendChild(li);
+            }
+        }
+
+        function queryWord() {
+            const word = document.getElementById('wordInput').value;
+            const resultBox = document.getElementById('resultBox');
+            resultBox.innerHTML = '加载中...';
+
+            // 替换为真实的Youdao API密钥和URL（需您申请）
+            const apiUrl = `http://dict.youdao.com/jsonapi?q=${word}&keyfrom=8PRhnRU0ISrqaGSqFelozmwtRoCx58dv&key=your-secret`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.ec.word) {
+                        const definition = data.ec.word.trs[0].tr[0].l.i[0];
+                        resultBox.innerHTML = `
+                            <p>释义: ${definition}</p>
+                            <audio controls>
+                                <source src="http://dict.youdao.com/dictvoice?audio=${word}" type="audio/mpeg">
+                            </audio>
+                        `;
+                    } else {
+                        resultBox.innerHTML = '查询失败，请检查单词或API设置。';
+                    }
+                })
+                .catch(error => {
+                    resultBox.innerHTML = '错误: ' + error.message;
+                });
+        }
+    </script>
+</body>
+</html>
